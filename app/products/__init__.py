@@ -1,4 +1,3 @@
-from hmac import new
 from os import getenv
 from flask import jsonify
 import math
@@ -29,6 +28,7 @@ def get_products_csv(product_id,page,per_page):
         product = [product for product in data_csv if product['id']==product_id]
         return jsonify(*product)
 
+    #check query_params
     if isinstance(page,str) or isinstance(per_page,str):
         return {'msg': f'Algum dado não está de acordo'}, 400
 
