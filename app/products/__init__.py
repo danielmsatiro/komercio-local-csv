@@ -61,11 +61,11 @@ def create_product_csv(payload):
 
 def update_product_csv(payload, product_id):
     #check payload:
-    error = ({'msg': f'Algum dado não está de acordo'}, 400)
+    """ error = ({'msg': f'Algum dado não está de acordo'}, 400)
     for key in payload.keys():
         if key not in ['name','price']:
             return error
-    if type(payload['price'])!=float: return error
+    if type(payload['price'])!=float: return error """
     
     data_csv = extract_formated_products()
     new_data_csv = []
