@@ -1,5 +1,10 @@
 from flask import Flask, request
-from app.products import get_products_csv, create_product_csv, update_product_csv, delete_product_csv
+from app.products import (
+    get_products_csv,
+    create_product_csv,
+    update_product_csv,
+    delete_product_csv
+    )
 
 app = Flask(__name__)
 

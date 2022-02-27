@@ -2,6 +2,7 @@ from os import getenv
 from flask import jsonify
 import math
 import csv
+""" from check_payload import check_payload, PRODUCT_TYPE """
 
 FILEPATH = getenv('FILEPATH')
 
@@ -43,11 +44,13 @@ def get_products_csv(product_id,page,per_page):
 def create_product_csv(payload):
     #check payload
     error = ({'msg': f'Algum dado não está de acordo'}, 400)
-    if 'name' not in payload or 'price' not in payload: return error
-    for key in payload.keys():
+    if not {'name','price'}.issubset(set(payload)): return error
+    for key in payload.copy().keys():
         if key not in ['name','price']:
-            return error
-    if type(payload['price'])!=float: return error
+            del payload[key]
+    if not isinstance(payload['price'],(float)): return error
+    
+    """ payload = check_payload(payload,error,**PRODUCT_TYPE) """
 
     data_csv = extract_formated_products()
     payload.update({'id': data_csv[-1]['id']+1})
@@ -61,21 +64,23 @@ def create_product_csv(payload):
 
 def update_product_csv(payload, product_id):
     #check payload:
-    """ error = ({'msg': f'Algum dado não está de acordo'}, 400)
-    for key in payload.keys():
+    for key in payload.copy().keys():
         if key not in ['name','price']:
-            return error
-    if type(payload['price'])!=float: return error """
+            del payload[key]
+    if 'price' in payload and not isinstance(payload['price'],(float)):
+        return {'msg': f"Price's value has to be a float or int type"}, 400
     
     data_csv = extract_formated_products()
     new_data_csv = []
     
     #Search the product:
     not_found = ({'error': f'product id {product_id} not found'}, 404)
+    updated_product = None
     for product in data_csv:
         if product['id']==product_id:
             product.update(payload)
-            new_data_csv.append(product)
+            updated_product = product
+            new_data_csv.append(updated_product)
             break
         else:
             new_data_csv.append(product)
@@ -93,7 +98,7 @@ def update_product_csv(payload, product_id):
         csv_dict_writer.writeheader()
         csv_dict_writer.writerows(new_data_csv)
         
-    return payload
+    return jsonify(updated_product)
 
 def delete_product_csv(product_id):
     data_csv = extract_formated_products()
@@ -123,5 +128,3 @@ def delete_product_csv(product_id):
         csv_dict_writer.writerows(new_data_csv)
 
     return deleted_product
-
-
