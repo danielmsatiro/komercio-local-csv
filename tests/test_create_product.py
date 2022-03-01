@@ -152,7 +152,3 @@ def test_with_more_keys(client: FlaskClient, database_filename: str, payload: Di
     ] == last_product, (
         "Verifique se o product_id 31 foi inserido corretamente no fim do arquivo .cvs"
     )
-
-
-def test_types_of_key_price():
-    pass
