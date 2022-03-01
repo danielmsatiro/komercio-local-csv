@@ -54,7 +54,7 @@ def get_products_csv(product_id, page, per_page):
 
 def create_product_csv(payload):
     # check payload
-    error = ({"msg": f"Algum dado não está de acordo"}, 400)
+    error = ({"error": f"Algum dado não está de acordo"}, 400)
     if not {"name", "price"}.issubset(set(payload)):
         return error
     for key in payload.copy().keys():

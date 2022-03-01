@@ -1,22 +1,37 @@
 import csv
 from random import randint
+from typing import Dict
 
 from flask.testing import FlaskClient
 from pytest import mark
 
 
-@mark.parametrize("test_id", [1, 8, 13, 15, 21, 30])
-def test_existed_id(client: FlaskClient, database_filename: str, test_id: int):
-    payload = {"name": "teste", "price": 15.99}
-    response = client.patch(f"/products/{test_id}", json=payload)
+@mark.parametrize(
+    "test_id,payload",
+    [
+        (1, {"name": "teste", "price": 15.99}),
+        (8, {"name": "teste"}),
+        (13, {"price": 15.99}),
+        (15, {"name1": "teste", "price": 15.99}),
+        (21, {"name": "teste", "price": 15.99, "price2": 15.99}),
+        (30, {}),
+    ],
+)
+def test_existed_id(
+    client: FlaskClient, database_filename: str, test_id: int, payload: Dict
+):
+    with open(database_filename, "r") as products_csv:
+        updated_product = list(csv.reader(products_csv))[test_id]
+
     expected = {
         "id": test_id,
-        "name": "teste",
-        "price": 15.99,
+        "name": payload.get("name", updated_product[1]),
+        "price": payload.get("price", float(updated_product[2])),
     }
+    response = client.patch(f"/products/{test_id}", json=payload)
 
     with open(database_filename, "r") as products_csv:
-        last_product = list(csv.reader(products_csv))[test_id]
+        updated_product = list(csv.reader(products_csv))[test_id]
 
     assert (
         response.status_code == 200
@@ -24,9 +39,9 @@ def test_existed_id(client: FlaskClient, database_filename: str, test_id: int):
     assert (
         response.json == expected
     ), "Verifique se a mensagem de sucesso de PATCH /products está formatada corretamente"
-    assert [
-        str(value) for value in expected.values()
-    ] == last_product, f"Verifique se o product_id {test_id} foi inserido corretamente no fim do arquivo .cvs"
+    assert sorted(str(value) for value in expected.values()) == sorted(
+        updated_product
+    ), f"Verifique se o product_id {test_id} foi inserido corretamente no fim do arquivo .cvs"
 
 
 def test_id_not_found(client: FlaskClient, database_filename: str):
@@ -41,4 +56,3 @@ def test_id_not_found(client: FlaskClient, database_filename: str):
     assert (
         response.json == expected
     ), f"Verifique se a mensagem de error de PATCH /products{test_id} está formatada corretamente"
-
